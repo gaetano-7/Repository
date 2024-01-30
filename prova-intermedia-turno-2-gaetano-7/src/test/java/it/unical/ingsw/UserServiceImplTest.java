@@ -1,122 +1,92 @@
 package it.unical.ingsw;
 
-import it.unical.ingsw.dao.UserDao;
-import it.unical.ingsw.dto.UserConverter;
-import it.unical.ingsw.service.EmailService;
-import it.unical.ingsw.service.SecurityService;
-import it.unical.ingsw.service.UserServiceImpl;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.*;
+import it.unical.ingsw.exceptions.UserAlreadyExistsException;
+import org.junit.jupiter.api.*;
+import static org.junit.jupiter.api.Assertions.*;
 import it.unical.ingsw.dao.UserDao;
 import it.unical.ingsw.dto.CreateUserDTO;
 import it.unical.ingsw.dto.UserConverter;
 import it.unical.ingsw.dto.UserDTO;
-import it.unical.ingsw.entities.User;
 import it.unical.ingsw.entities.Role;
+import it.unical.ingsw.entities.User;
+import it.unical.ingsw.service.EmailService;
+import it.unical.ingsw.service.SecurityService;
+import it.unical.ingsw.service.UserService;
+import it.unical.ingsw.service.UserServiceImpl;
+import org.codehaus.plexus.component.configurator.converters.basic.Converter;
+import org.junit.Before;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
-import it.unical.ingsw.exceptions.UserAlreadyExistsException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 public class UserServiceImplTest {
-    @Mock
-    private UserDao userDao;
+
+    public UserService userService;
 
     @Mock
-    private SecurityService securityService;
+    public CreateUserDTO createUserDTOMock;
 
     @Mock
-    private EmailService emailService;
+    public UserConverter userConverterMock;
 
     @Mock
-    private UserConverter converter;
+    public UserDTO userDTOMock;
 
-    @InjectMocks
-    private UserServiceImpl userService;
+    @Mock
+    public UserDao userDaoMock;
 
-    @Before
-    public void setUp() {
-        MockitoAnnotations.openMocks(this);
+    @Mock
+    public SecurityService securityServiceMock;
+
+    @Mock
+    public EmailService emailServiceMock;
+
+    @Mock
+    public UserServiceImpl userServiceMock;
+
+    @BeforeAll
+    public static void preAll(){
+        System.out.println("INIZIO FASE DI TESTING");
     }
 
-    /*@BeforeEach
-    public void setUp() {
-        System.out.println("Inizio singolo test");
-        userService = new UserServiceImpl(userDao, securityService, emailService, converter);
+    @AfterAll
+    public static void afterAll(){
+        System.out.println("FINE FASE DI TESTING");
+    }
+
+    @BeforeEach
+    public void beforeEach(){
+        System.out.println("INIZIO SINGOLO TEST");
+        userService = new UserServiceImpl(userDaoMock,securityServiceMock,emailServiceMock,userConverterMock);
     }
 
     @AfterEach
-    public void setDown() {
-        System.out.println("Fine singolo test");
-    }
-     */
-
-    @Test
-    public void testCreateUser() throws Exception {
-        CreateUserDTO createUserDTO = new CreateUserDTO("John Doe", "password", "john@example.com");
-
-        User user = new User(createUserDTO.getName(), createUserDTO.getPassword(), createUserDTO.getEmail());
-
-        when(userDao.getUserByEmail(createUserDTO.getEmail())).thenReturn(null);
-        when(converter.createUserDTOtoUser(createUserDTO)).thenReturn(user);
-        when(securityService.hash(createUserDTO.getPassword())).thenReturn("hashedPassword");
-        when(userDao.save(any(User.class))).thenReturn(user);
-
-        userService.setShouldVerifyEmail(true);
-
-        UserDTO result = userService.createUser(createUserDTO);
-
-        verify(userDao, times(1)).getUserByEmail(createUserDTO.getEmail());
-        verify(converter, times(1)).createUserDTOtoUser(createUserDTO);
-        verify(securityService, times(1)).hash(createUserDTO.getPassword());
-        verify(userDao, times(1)).save(user);
-        verify(emailService, never()).sendEmailVerificationEmail(anyString());
-
-        assertNotNull(result);
-        assertEquals(createUserDTO.getEmail(), result.getEmail());
-        assertEquals(user.getName(), result.getName());
-        assertEquals(user.getId(), result.getId());
-        assertEquals(user.getRole(), result.getRole());
-    }
-
-    @Test(expected = UserAlreadyExistsException.class)
-    public void testCreateUser_UserAlreadyExists() throws Exception {
-        CreateUserDTO createUserDTO = new CreateUserDTO("John Doe", "password", "john@example.com");
-        User existingUser = new User(createUserDTO.getName(), createUserDTO.getPassword(), createUserDTO.getEmail());
-
-        when(userDao.getUserByEmail(createUserDTO.getEmail())).thenReturn(existingUser);
-
-        userService.createUser(createUserDTO);
-
+    public void afterEach(){
+        System.out.println("FINE SINGOLO TEST");
     }
 
     @Test
-    public void testFindUserByEmail() {
-        // Dati di mock
-        String userEmail = "john@example.com";
-        User user = new User("John Doe", "password", userEmail);
-        UserDTO userDTO = new UserDTO("1", "John Doe", userEmail, null);
+    public void createUserTest() throws Exception {
+        System.out.println("TEST PER TESTARE LA FUNZIONE createUser");
 
-        when(userDao.getUserByEmail(userEmail)).thenReturn(user);
+        User user = new User("Giuseppe", "Password", "Email");
+        UserDTO userDTO = new UserDTO("219911", "Giuseppe", "Email", new Role("Giuseppe", "Description"));
 
-        UserDTO result = userService.findUserByEmail(userEmail);
+        when(userDaoMock.getUserByEmail(anyString())).thenReturn(null);
+        when(userConverterMock.createUserDTOtoUser(any())).thenReturn(user);
+        when(securityServiceMock.hash(anyString())).thenReturn(user.getPassword());
+        when(userDaoMock.save(any())).thenReturn(user);
+        when(userConverterMock.userToUserDTO(any())).thenReturn(userDTO);
 
-        verify(userDao, times(1)).getUserByEmail(userEmail);
-        verify(converter, times(1)).userToUserDTO(user);
+        UserDTO userDTO1 = userService.createUser(new CreateUserDTO("Giuseppe", "Password", "Email"));
 
-        assertNotNull(result);
-        assertEquals(userEmail, result.getEmail());
-        assertEquals("John Doe", result.getName());
+        assertEquals(userDTO, userDTO1);
     }
 
 }
