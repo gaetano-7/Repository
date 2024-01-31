@@ -80,4 +80,17 @@ public class UserServiceImplTest {
         assertEquals(userDTO, userDTO1);
     }
 
+    @Test
+    public void findUserByEmailTest(){
+        User user = new User("Giuseppe", "Password", "Email");
+        UserDTO userDTO = new UserDTO("219911", "Giuseppe", "Email", new Role("Giuseppe", "Description"));
+
+        when(userDaoMock.getUserByEmail(anyString())).thenReturn(user);
+        when(userConverterMock.userToUserDTO(any())).thenReturn(userDTO);
+
+        UserDTO userDTO1 = userService.findUserByEmail("Email");
+
+        assertEquals(userDTO, userDTO1);
+    }
+
 }
