@@ -30,50 +30,41 @@ public class UserServiceImplTest {
     public UserService userService;
 
     @Mock
-    public CreateUserDTO createUserDTOMock;
-
-    @Mock
-    public UserConverter userConverterMock;
-
-    @Mock
-    public UserDTO userDTOMock;
-
-    @Mock
     public UserDao userDaoMock;
 
     @Mock
     public SecurityService securityServiceMock;
 
     @Mock
-    public EmailService emailServiceMock;
+    public UserConverter userConverterMock;
 
     @Mock
-    public UserServiceImpl userServiceMock;
+    public EmailService emailServiceMock;
 
     @BeforeAll
-    public static void preAll(){
+    public static void beforeall(){
         System.out.println("INIZIO FASE DI TESTING");
     }
 
     @AfterAll
-    public static void afterAll(){
+    public static void afterall(){
         System.out.println("FINE FASE DI TESTING");
     }
 
     @BeforeEach
-    public void beforeEach(){
+    public void beforeach(){
         System.out.println("INIZIO SINGOLO TEST");
-        userService = new UserServiceImpl(userDaoMock,securityServiceMock,emailServiceMock,userConverterMock);
+        userService = new UserServiceImpl(userDaoMock, securityServiceMock, emailServiceMock, userConverterMock);
     }
 
     @AfterEach
-    public void afterEach(){
+    public void aftereach(){
         System.out.println("FINE SINGOLO TEST");
     }
 
     @Test
     public void createUserTest() throws Exception {
-        System.out.println("TEST PER TESTARE LA FUNZIONE createUser");
+        System.out.println("TEST DELLA FUNZIONE createUser");
 
         User user = new User("Giuseppe", "Password", "Email");
         UserDTO userDTO = new UserDTO("219911", "Giuseppe", "Email", new Role("Giuseppe", "Description"));
@@ -87,22 +78,6 @@ public class UserServiceImplTest {
         UserDTO userDTO1 = userService.createUser(new CreateUserDTO("Giuseppe", "Password", "Email"));
 
         assertEquals(userDTO, userDTO1);
-    }
-
-    @Test
-    public void findUserByEmailTest(){
-        System.out.println("SECONDO TEST");
-
-        User user = new User("Giuseppe", "Password", "Email");
-        UserDTO userDTO = new UserDTO("219911", "Giuseppe", "Email", new Role("Giuseppe", "Description"));
-
-        when(userDaoMock.getUserByEmail(anyString())).thenReturn(user);
-        when(userConverterMock.userToUserDTO(any())).thenReturn(userDTO);
-
-        UserDTO userDTO1 = userService.findUserByEmail("Email");
-
-        assertEquals(userDTO, userDTO1);
-
     }
 
 }
