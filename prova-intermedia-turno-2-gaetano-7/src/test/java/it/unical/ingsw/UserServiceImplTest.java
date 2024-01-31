@@ -108,4 +108,15 @@ public class UserServiceImplTest {
         verify(securityServiceMock, times(1)).hash(anyString());
     }
 
+    @Test
+    public void RunTimeExceptionTest(){
+        doThrow(RuntimeException.class).when(userDaoMock).getUserByEmail(anyString());
+
+        Exception ex = assertThrows(RuntimeException.class, () ->{
+           userDaoMock.getUserByEmail(anyString());
+        });
+
+        verify(userDaoMock, times(1)).getUserByEmail(anyString());
+    }
+
 }
