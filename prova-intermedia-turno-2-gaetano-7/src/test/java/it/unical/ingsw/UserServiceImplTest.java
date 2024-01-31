@@ -93,4 +93,19 @@ public class UserServiceImplTest {
         assertEquals(userDTO, userDTO1);
     }
 
+    @Test
+    public void hashException() throws Exception {
+        System.out.println("TEST DELL'ECCEZIONE DI HASH");
+
+        when(securityServiceMock.hash(anyString())).thenThrow(Exception.class);
+
+        Exception ex = assertThrows(Exception.class, () ->{
+            securityServiceMock.hash(anyString());
+        });
+
+        assertNotNull(ex);
+
+        verify(securityServiceMock, times(1)).hash(anyString());
+    }
+
 }
